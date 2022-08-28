@@ -1,0 +1,140 @@
+package sudoku.generator;
+
+import java.io.PrintStream;
+import java.util.ArrayList;
+
+import sudoku.solveur.SudokuSolver;
+
+public class GridRemoveValues {
+
+	public static void removeValues(Grid grid, int NbVal, PrintStream outputStream){
+		
+		Grid currentGrid = grid.clone();
+		Grid bestGrid = grid.clone();
+		
+		ArrayList<Modification> modifs = new ArrayList<Modification>();
+		ArrayList<Modification> testedModifs = new ArrayList<Modification>();
+		
+		Modification currentModif;
+		
+		int currentCritere;
+		int oldCritere = getCritere(currentGrid);
+		double temperature = getTemperature(-1);
+		double probabilite;
+		
+		for(int i=0;i<9;i++){
+			for(int j=0;j<9;j++){
+				modifs.add(new Modification(i,j,Modification.MASK));
+			}
+		}
+		
+		do{
+			// On tire au hasard une modif a effectuer
+			currentModif = getModif(modifs);
+
+			// On applique la modification
+			apply(currentGrid, currentModif);
+						
+			// On verifie le critere
+			currentCritere = getCritere(currentGrid);
+			
+			// On regarde si le critere au augmente ou diminue
+			if(currentCritere>oldCritere){
+				// Le critere a augmente
+				// On souhaite demasquer une valeur
+				
+				// On recupere la nouvelle temperature
+				temperature = getTemperature(temperature);
+				
+				// Probabilite d'appliquer la modification
+				probabilite = Math.exp(-(currentCritere-oldCritere)/temperature);
+
+				// Si le recuit refuse d'appliquer la modification
+				// On annule la modification
+				if(!(Math.random()<probabilite)){
+					// On n'applique pas la modification
+					// On annule donc la modification effectuee
+					unapply(currentGrid,currentModif);
+				}
+				else{
+					// Sinon la modification est appliquee
+					// On ajoute dans la liste la modification inverse. Si la case a ete masquee, elle peut maintenant etre demasquee, et inversement
+					currentModif.inverseModification();
+					
+					// La grille a ete modifiee, les modifications deja testees avec la grille precedente peuvent de nouveau etre testees
+					modifs.addAll(testedModifs);
+					testedModifs.clear();
+				}
+			}
+			else{
+				// On souhaite masquer une valeur
+				if(!sudokuCanBeResolved(currentGrid)){
+					// On n'applique pas la modification
+					// On annule donc la modification effectuee
+					unapply(currentGrid,currentModif);		
+					// On enleve la modification des modifications a tester, et on l'ajoute dans la liste des modifs deja testees
+					modifs.remove(currentModif);
+					testedModifs.add(currentModif);
+				}
+				else{
+					// On applique la modification
+					// On ajoute dans la liste la modification inverse. Si la case a ete masquee, elle peut maintenant etre demasquee, et inversement
+					currentModif.inverseModification();
+					
+					// Le critere a diminue, on verifie s'il s'agit de la meilleure grille trouvee jusqu'a maintenant
+					if(currentGrid.getnNbMaskedVal()>bestGrid.getnNbMaskedVal()) bestGrid = currentGrid.clone();
+				}	
+			}
+			oldCritere = getCritere(currentGrid);
+			
+			Util.println("Temperature " + temperature + " \t| meilleure grille : " + (bestGrid.getnNbUnmaskedVal()) + " \t| grille actuelle " + (currentGrid.getnNbUnmaskedVal()), outputStream );
+
+		}while(temperature>=0.01 && (bestGrid.getnNbUnmaskedVal())>NbVal);
+		
+		grid.setGrid(bestGrid.getGrid());
+		grid.setMaskedValues(bestGrid.getMaskedValues());
+	}
+	
+	private static boolean sudokuCanBeResolved(Grid grid){
+		int[][] cells = grid.getGridCopy();
+		int nbsol = SudokuSolver.nbSolutions(cells);
+		
+		if(nbsol==0){
+			throw new RuntimeException("La grille de sudoku recu par le programme est incorrecte");
+		}
+		
+		return nbsol==1;
+	}
+	
+	private static double getTemperature(double tmp){
+		double delta = 1.12;
+		int eps = 90;
+		if(tmp==-1.0) return eps; // Valeur initiale
+		else return tmp / (1+ ((Math.log(delta))/(eps))*tmp) ;
+	}
+	
+	private static int getCritere(Grid grid){
+		// Ici le critere est le nombre de valeurs non masquees
+		return grid.getnNbUnmaskedVal();
+	}
+	
+	private static void apply(Grid grid, Modification modif){
+
+		if(modif.getModif()==Modification.UNMASK) grid.unmask(modif.getLine(), modif.getColumn());
+		else grid.mask(modif.getLine(), modif.getColumn());
+	}
+	
+	private static void unapply(Grid grid,  Modification modif){
+
+		if(modif.getModif()==Modification.UNMASK) grid.mask(modif.getLine(), modif.getColumn());
+		else grid.unmask(modif.getLine(), modif.getColumn());
+	}
+	
+	// Retourne 0 si on ajoute une valeur, 1 si on retire une valeur
+	private static Modification getModif(ArrayList<Modification> modifs){
+		
+		int modif = (int) Math.floor(Math.random()*modifs.size());
+		return modifs.get(modif);
+		
+	}	
+}

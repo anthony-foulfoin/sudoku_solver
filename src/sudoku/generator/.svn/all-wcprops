@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/rech_op/!svn/ver/11/projet_rechop/src/sudoku/generator
+END
+GridPermut.java
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/rech_op/!svn/ver/16/projet_rechop/src/sudoku/generator/GridPermut.java
+END
+GridRemoveValues.java
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/rech_op/!svn/ver/11/projet_rechop/src/sudoku/generator/GridRemoveValues.java
+END
+SudokuGen.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/rech_op/!svn/ver/10/projet_rechop/src/sudoku/generator/SudokuGen.java
+END
+Grid.java
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/rech_op/!svn/ver/11/projet_rechop/src/sudoku/generator/Grid.java
+END
+Modification.java
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/rech_op/!svn/ver/7/projet_rechop/src/sudoku/generator/Modification.java
+END
+Util.java
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/rech_op/!svn/ver/11/projet_rechop/src/sudoku/generator/Util.java
+END
